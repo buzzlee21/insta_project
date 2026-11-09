@@ -1,0 +1,24 @@
+
+<!-- 기본 html 코드 가져오기 -->
+{% extends 'base.html'%}
+
+{% block title %} 상세보기 {%endblock %}
+
+<!-- content 영역에 들어갈 코드 -->
+
+{% block content %} 
+
+    <p>{{ post.content }}</p>
+    
+
+    <a href="/posts/{{post.id}}/edit">수정하기</a>
+
+    <form action="/posts/{{ post.id }}/delete" method="post">
+
+        <input type="submit" value="삭제하기">
+
+
+    </form>
+    
+{% endblock %}
+

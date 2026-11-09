@@ -9,8 +9,9 @@
  <h1>전체 게시물</h1>
 
     {% for post in posts%}
+    <p>{{ post.id}}</p>
     <p>{{ post.content}}</p>
-    <a href="">자세히</a>
+    <a href="/posts/{{post.id}}">상세보기</a>
     {% endfor%}
 {% endblock %}
 
