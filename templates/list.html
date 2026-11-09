@@ -1,16 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-     
-    {%for post in posts%}
-    {{post.id}}
-    {{post.content}}
-    {%endfor%}
 
-    </body>
-</html>
+<!-- 기본 html 코드 가져오기 -->
+{% extends 'base.html'%}
+
+{% block title %} 전체 게시물 {%endblock %}
+
+<!-- content 영역에 들어갈 코드 -->
+{% block content %} 
+ <h1>전체 게시물</h1>
+
+    {% for post in posts%}
+    <p>{{ post.content}}</p>
+    <a href="">자세히</a>
+    {% endfor%}
+{% endblock %}
+
