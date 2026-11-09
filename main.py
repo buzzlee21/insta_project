@@ -1,10 +1,11 @@
 
 
 from fastapi import FastAPI, Request, HTTPException, Depends , Form
-from sqlalchemy import create_engine, Select
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+from sqlalchemy import create_engine, Select, func , ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
+from datetime import datetime
 
 DB_URL = 'postgresql+psycopg://sd4:sd4@localhost:5432/insta'
 engine = create_engine(DB_URL, echo=True)
@@ -20,6 +21,19 @@ class Post(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     # title: Mapped[str]
     content: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(server_default = func.now())
+    comments : Mapped[list['Comment']] = relationship(back_populates='post')
+
+
+class Comment(Base):
+    __tablename__ = 'comments'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    # created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'))
+    post: Mapped['Post'] = relationship(back_populates='comments')
 
 
 
@@ -53,7 +67,8 @@ def home():
 @app.get('/posts')
 def post_list(request: Request , db: Session = Depends(get_db)):
     # with Session(engine) as db :
-    posts = db.scalars(Select(Post)).all()
+    # posts = db.scalars(Select(Post)).all()
+    posts = db.scalars(Select(Post).order_by(Post.created_at.desc())).all()
 
     return templates.TemplateResponse(
 

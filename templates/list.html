@@ -11,6 +11,7 @@
     {% for post in posts%}
     <p>{{ post.id}}</p>
     <p>{{ post.content}}</p>
+    <small>{{ post.created_at.strftime('%Y%m%d %H:%M') }} </small>
     <a href="/posts/{{post.id}}">상세보기</a>
     {% endfor%}
 {% endblock %}
