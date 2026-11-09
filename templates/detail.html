@@ -8,17 +8,44 @@
 
 {% block content %} 
 
-    <p>{{ post.content }}</p>
-    
+<a href="/posts/{{post.id}}/edit">수정하기</a>
 
-    <a href="/posts/{{post.id}}/edit">수정하기</a>
+<p>{{ post.content }}</p>
+
 
     <form action="/posts/{{ post.id }}/delete" method="post">
 
         <input type="submit" value="삭제하기">
 
+    </form>
+
+    <br>
+
+    <form action="/posts/{{ post.id }}/comments/create" method="post">
+        <input type="text" name="content">
+        <input type="submit" value="댓글등록">
+
 
     </form>
+
+
+    {% for comment in post.comments | sort(attribute='created_at', reverse=True) %}
+    <p>
+      {{ comment.content }}
+      <small>{{ comment.created_at.strftime('%H:%M') }}</small>
+      
+      <form action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete" method="post">
+        <input type="submit" value="del">
+      </form>
+    </p>
     
+    {% else %}
+    <p>첫 댓글을 달아주세요</p>
+    {% endfor %}
+
+    <br>
+
+    <a href="/posts"> 전체 게시글로 이동</a>
+
 {% endblock %}
 

@@ -22,7 +22,7 @@ class Post(Base):
     # title: Mapped[str]
     content: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(server_default = func.now())
-    comments : Mapped[list['Comment']] = relationship(back_populates='post')
+    comments : Mapped[list['Comment']] = relationship(back_populates='post', cascade='all, delete-orphan')
 
 
 class Comment(Base):
@@ -31,7 +31,6 @@ class Comment(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    # created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'))
     post: Mapped['Post'] = relationship(back_populates='comments')
 
@@ -56,7 +55,7 @@ def get_post_or_404(post_id: int , db: Session = Depends(get_db)):
 
 
 
-
+########################################################################################3
 
 
 
@@ -132,3 +131,30 @@ def post_delete(post: Post = Depends(get_post_or_404), db: Session = Depends(get
 
     return RedirectResponse('/posts', status_code=303)
 
+
+@app.post('/posts/{post_id}/comments/create')
+def comment_create(
+    content: str = Form() , 
+    post: Post = Depends(get_post_or_404), 
+    db: Session = Depends(get_db)
+    ):
+
+    comment = Comment(content=content, post=post)
+
+    db.add(comment)
+    db.commit()
+
+    # return RedirectResponse(f'/posts/{post.id}', status_code=303)
+    return RedirectResponse(f'/posts/{post.id}', status_code=303)
+
+
+@app.post('/posts/{post_id}/comments/{comment_id}/delete')
+def comment_delete(post_id: int, comment_id: int, db: Session = Depends(get_db)):
+
+    comment = db.get(Comment, comment_id)
+
+    db.delete(comment)
+
+    db.commit()
+
+    return RedirectResponse(f'/posts/{post_id}', status_code=303)
