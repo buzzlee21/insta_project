@@ -1,10 +1,10 @@
 
 
-from fastapi import FastAPI
-from sqlalchemy import create_engine
+from fastapi import FastAPI, Request, HTTPException, Form
+from sqlalchemy import create_engine, Select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
-
 from fastapi.templating import Jinja2Templates
+
 DB_URL = 'postgresql+psycopg://sd4:sd4@localhost:5432/insta'
 engine = create_engine(DB_URL, echo=True)
 
@@ -26,11 +26,19 @@ app = FastAPI()
 templates = Jinja2Templates(directory='templates')
 
 
-
-
 @app.get('/')
 def home():
     return {'hi': 'hello'}
 
-@app.get('/')
-def 
+@app.get('/posts')
+def post_list(request: Request):
+    with Session(engine) as db :
+        posts = db.scalars(Select(Post)).all()
+
+    return templates.TemplateResponse(
+
+            request=request,
+            name='list.html',
+            context={'posts': posts}
+
+    )
