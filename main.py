@@ -6,9 +6,14 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, rela
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from datetime import datetime
+from pwdlib import PasswordHash
 
 DB_URL = 'postgresql+psycopg://sd4:sd4@localhost:5432/insta'
 engine = create_engine(DB_URL, echo=True)
+
+
+
+
 
 # 모델정의 > MVC의 모델 
 
@@ -35,10 +40,28 @@ class Comment(Base):
     post: Mapped['Post'] = relationship(back_populates='comments')
 
 
+class User(Base):
+  __tablename__ = 'users'
+
+  id: Mapped[int] = mapped_column(primary_key=True)
+  username: Mapped[str] = mapped_column(unique=True)
+  password_hash: Mapped[str]
+
+
+class UserSession(Base):
+  __tablename__ = 'sessions'
+
+  # 신분증
+  id: Mapped[str] = mapped_column(primary_key=True)
+  user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+  created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+  user: Mapped['User'] = relationship()
+
 
 
 app = FastAPI()
 templates = Jinja2Templates(directory='templates')
+password_hash = PasswordHash.recommended()
 
 def get_db():
     with Session(engine) as db:
@@ -158,3 +181,58 @@ def comment_delete(post_id: int, comment_id: int, db: Session = Depends(get_db))
     db.commit()
 
     return RedirectResponse(f'/posts/{post_id}', status_code=303)
+
+
+# a태그를 통해서 들어오는 signup
+@app.get('/signup')
+def signup_form(request: Request):
+  return templates.TemplateResponse(
+    request=request,
+    name='signup.html'
+  )
+
+
+# form method='post' 방식으로 들어오는 signup
+@app.post('/signup')
+def signup(
+  request: Request,
+  username: str = Form(), 
+  password: str = Form(),
+  db: Session = Depends(get_db)
+):
+  # 이미 있는 유저인지 검증
+  # SELECT * FROM users WHERE username='changhee'
+  exists = db.scalar(   select(User).where(User.username == username)  )
+  
+  # 이미 유저네임을 사용하는 경우 
+  if exists:
+    return templates.TemplateResponse(
+      request=request,
+      name='signup.html',
+      context={'error': '이미 있는 아이디입니다.'}
+    )
+
+  
+  # password를 암호화
+  # from pwdlib import PasswordHash
+  
+  hashed_pw = password_hash.hash(password)
+
+  user = User(username=username, password_hash=hashed_pw)
+  db.add(user)
+  db.commit()
+
+  return RedirectResponse('/login', status_code=303)
+
+
+@app.get('/login')
+def login_form(request: Request):
+  return templates.TemplateResponse(
+    request=request,
+    name='login.html'
+  )
+
+
+@app.post('/login')
+def login():
+  pass
