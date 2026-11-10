@@ -80,24 +80,6 @@ def get_post_or_404(post_id: int , db: Session = Depends(get_db)):
 
     return post 
 
-# def get_current_user(request: Request, db: Session = Depends(get_db)):
-#     session_id = request.cookies.get('session_id' )
-
-#      # 신분증 유무 판단
-#     if session_id is None:
-    
-#         return None
-
-#     user_session = db.get(UserSession, session_id)
-
-#     # 신분증 유효한지 검사
-#     if user_session is None:
-       
-#        return None
-
-#     print(f'sesson_id------------------------------------------ : {session_id}')
-    
-#     return user_session.user
 
 def get_current_user(request: Request, db: Session = Depends(get_db)):
   session_id = request.cookies.get('session_id')
