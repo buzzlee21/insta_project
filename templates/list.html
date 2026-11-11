@@ -11,7 +11,11 @@
     {% for post in posts%}
     <p>{{ post.id}}</p>
     <p>{{ post.content}}</p>
-    
+
+
+
+    <small><a href="/users/{{post.user.username}}">{{ post.user.username }} 프로필 페이지 이동</a></small>
+
     <small>댓글 {{ post.comments | length }}개</small>
     <small>좋아요 {{ post.likes | length}}개 </small>
 
@@ -26,5 +30,6 @@
 
 
     {% endfor%}
+
 {% endblock %}
 

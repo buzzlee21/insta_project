@@ -13,10 +13,7 @@ class Post(Base):
   content: Mapped[str]
   created_at: Mapped[datetime] = mapped_column(server_default=func.now())
   # created_at: Mapped[datetime]
-  comments: Mapped[list['Comment']] = relationship(
-    back_populates='post',
-    cascade='all, delete-orphan'
-  )
+  comments: Mapped[list['Comment']] = relationship( back_populates='post',cascade='all, delete-orphan')
   user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
   user: Mapped['User'] = relationship(back_populates='posts')
 
@@ -60,3 +57,13 @@ class Like(Base):
 
   user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
   post_id: Mapped[int] = mapped_column(ForeignKey('posts.id'), primary_key=True)
+
+
+class Follow(Base):
+  __tablename__ = 'follows'
+
+  # 팔로워: 화살표 보내는 사람
+  # 팔로잉: 화살표 받는 사람
+  follower_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+  following_id: Mapped[int] = mapped_column(ForeignKey('users.id'), primary_key=True)
+
