@@ -6,60 +6,76 @@
 
 <!-- content 영역에 들어갈 코드 -->
 
-{% block content %} 
+{% block content %}
 
+<article class="mb-4">
 
-<p>{{ post.content }}</p>
+    <!-- 글쓴이 -->
+    <div class="mb-2">
+        <a href="/users/{{ post.user.username }}" class="fw-semibold text-dark text-decoration-none">{{ post.user.username }}</a>
+    </div>
 
-<small>{{ post.user.username }}</small>
+    <!-- 사진 (사진 없는 옛 글은 건너뜀) -->
+    {% if post.image_url %}
+    <img src="{{ post.image_url }}" alt="" class="feed-photo w-100 rounded">
+    {% endif %}
 
-{% if user.id == post.user %}
+    <!-- 본문 -->
+    <p class="mt-2 mb-1">
+        <a href="/users/{{ post.user.username }}" class="fw-semibold text-dark text-decoration-none">{{ post.user.username }}</a>
+        {{ post.content }}
+    </p>
+    <small class="text-body-secondary">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
 
-<a href="/posts/{{post.id}}/edit">수정하기</a>
+    <!-- 내 글일 때만 수정 · 삭제 -->
+    {% if user and user.id == post.user_id %}
+    <div class="d-flex gap-2 mt-3">
+        <a href="/posts/{{ post.id }}/edit" class="btn btn-outline-secondary btn-sm">수정하기</a>
+        <form action="/posts/{{ post.id }}/delete" method="post" class="m-0">
+            <input type="submit" value="삭제하기" class="btn btn-outline-danger btn-sm">
+        </form>
+    </div>
+    {% endif %}
 
-    <form action="/posts/{{ post.id }}/delete" method="post">
+</article>
 
-        <input type="submit" value="삭제하기">
+<!-- 댓글 -->
+<section>
+    <h2 class="fs-6 fw-bold mb-3">댓글 {{ post.comments | length }}개</h2>
 
-    </form>
-
-{% endif %}
-
-    <br>
-
-    {% if user%}
-
-    <form action="/posts/{{ post.id }}/comments/create" method="post">
-        <input type="text" name="content">
-        <input type="submit" value="댓글등록">
-
-
+    <!-- 댓글 등록 (로그인했을 때만) -->
+    {% if user %}
+    <form action="/posts/{{ post.id }}/comments/create" method="post" class="input-group mb-3">
+        <input type="text" name="content" class="form-control" placeholder="댓글 달기...">
+        <input type="submit" value="댓글등록" class="btn btn-primary">
     </form>
     {% endif %}
 
+    <!-- 댓글 카드 (최신 순) -->
     {% for comment in post.comments | sort(attribute='created_at', reverse=True) %}
-    <p>
-      {{ comment.content }}
-      
-      <small>{{ comment.user.username}}</small>
-      <small>{{ comment.created_at.strftime('%H:%M') }}</small>
-      
+    <div class="card mb-2">
+        <div class="card-body py-2 px-3 d-flex justify-content-between align-items-start gap-2">
+            <div>
+                <div>
+                    <span class="fw-semibold">{{ comment.user.username }}</span>
+                    {{ comment.content }}
+                </div>
+                <small class="text-body-secondary">{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
 
-
-      {%if user.id == comment.user_id %}
-      <form action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete" method="post">
-        <input type="submit" value="del">
-      </form>
-      {% endif %}
-    </p>
-    
+            <!-- 내 댓글일 때만 삭제 -->
+            {% if user and user.id == comment.user_id %}
+            <form action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete" method="post" class="m-0">
+                <input type="submit" value="삭제" class="btn btn-outline-danger btn-sm">
+            </form>
+            {% endif %}
+        </div>
+    </div>
     {% else %}
-    <p>첫 댓글을 달아주세요</p>
+    <p class="text-body-secondary">첫 댓글을 달아주세요</p>
     {% endfor %}
+</section>
 
-    <br>
-
-    <a href="/posts"> 전체 게시글로 이동</a>
+<a href="/posts" class="d-inline-block mt-3 text-decoration-none">← 전체 게시글로 이동</a>
 
 {% endblock %}
-

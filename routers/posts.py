@@ -1,9 +1,10 @@
 
 
 # 설치한 모듈들
-from fastapi import Request, Form, HTTPException, APIRouter
+from fastapi import Request, Form, HTTPException, APIRouter, File, UploadFile
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
+from photos import save_photo
 
 # 우리가 만든파일
 from models import Post, Comment, Like
@@ -22,9 +23,9 @@ def post_list(
   
   liked_ids = []
   if user:
-    # liked_ids = db.scalars( select(Like.post_id).where(user.id == Like.user_id)).all() > 원본 
-    liked_ids = db.scalars( select(Like.post_id).where(Like.user_id == user.id)).all()
-
+    # 아래 코드들은 동일한 코드임
+    # liked_ids = db.scalars( select(Like.post_id).where(Like.user_id == user.id)).all()
+    liked_ids = [like.post_id for like in user.likes]
 
   # posts = db.scalars(select(Post)).all()
   posts = db.scalars(select(Post).order_by(Post.created_at.desc())).all()
@@ -55,13 +56,16 @@ def post_new(
 def post_create(
   db: SessionDep,
   user: CurrentUserDep,
-  content: str = Form()
+  content: str = Form(),
+  photo: UploadFile = File()
 ):
   if user is None:
     return RedirectResponse('/login', status_code=303)
 
+  image_url = save_photo(photo)
+
   # db = Session(engine)
-  post = Post(content=content, user=user)
+  post = Post(content=content, user=user, image_url=image_url) 
   db.add(post)
   db.commit()
 

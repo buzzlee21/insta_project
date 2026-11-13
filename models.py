@@ -6,11 +6,15 @@ from datetime import datetime
 from database import Base
 
 
+
 class Post(Base):
   __tablename__ = 'posts'
 
   id: Mapped[int] = mapped_column(primary_key=True)
   content: Mapped[str]
+
+  image_url: Mapped[str | None]
+
   created_at: Mapped[datetime] = mapped_column(server_default=func.now())
   # created_at: Mapped[datetime]
   comments: Mapped[list['Comment']] = relationship( back_populates='post',cascade='all, delete-orphan')
@@ -39,9 +43,13 @@ class User(Base):
 
   id: Mapped[int] = mapped_column(primary_key=True)
   username: Mapped[str] = mapped_column(unique=True)
+  avatar_url: Mapped[str |None]
   password_hash: Mapped[str]
   posts: Mapped[list['Post']] = relationship(back_populates='user')
   # comments: Mapped[list['Comment']] = relationship(back_populates='user')
+  likes: Mapped[list['Like']] = relationship()
+  followings: Mapped [list['Follow']] = relationship(foreign_keys='Follow.follower_id')
+  followers: Mapped[list['Follow']] = relationship(foreign_keys='Follow.following_id')
 
 class UserSession(Base):
   __tablename__ = 'sessions'
